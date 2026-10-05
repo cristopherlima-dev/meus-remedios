@@ -1,0 +1,108 @@
+/* ============ Cores (mude aqui para trocar o tema) ============ */
+:root {
+  --bg: #f4f6f8;
+  --card: #fff;
+  --txt: #1d2733;
+  --sub: #6b7785;
+  --pri: #2f7d5b;
+  --pri2: #e6f3ec;
+  --warn: #b26b00;
+  --warn2: #fff3df;
+  --err: #b3261e;
+  --err2: #fde7e5;
+  --line: #e3e7eb;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--txt);
+}
+
+/* No PC, o app fica centralizado com largura de celular */
+#app, .login { max-width: 520px; margin: 0 auto; }
+#app { min-height: 100vh; display: flex; flex-direction: column; }
+.tela { flex: 1; display: flex; flex-direction: column; }
+
+/* ============ Cabeçalho ============ */
+header {
+  background: var(--pri);
+  color: #fff;
+  padding: 18px 16px 14px;
+  padding-top: calc(18px + env(safe-area-inset-top));
+  position: relative;
+}
+header h1 { margin: 0; font-size: 20px; }
+.date { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; font-size: 14px; }
+.date button, .sair {
+  background: #ffffff26; border: 0; color: #fff; border-radius: 8px;
+  height: 28px; min-width: 32px; font-size: 16px; cursor: pointer;
+}
+button:disabled { opacity: .35; cursor: default; }
+.sair { position: absolute; right: 16px; bottom: 14px; font-size: 13px; padding: 0 10px; }
+
+main { padding: 14px 16px 90px; flex: 1; }
+h2 { font-size: 13px; text-transform: uppercase; color: var(--sub); letter-spacing: .5px; margin: 6px 0 10px; }
+
+/* ============ Cards ============ */
+.card { background: var(--card); border-radius: 14px; padding: 14px; margin-bottom: 12px; border: 1px solid var(--line); }
+.card.late { border-color: var(--err); }
+.card.inativo { opacity: .6; }
+.row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.nome { font-weight: 600; font-size: 16px; }
+.per { font-size: 12px; color: var(--sub); margin-top: 2px; }
+
+.tag { font-size: 13px; padding: 6px 10px; border-radius: 20px; font-weight: 600; white-space: nowrap; }
+.ok   { background: var(--pri2);  color: var(--pri); }
+.pend { background: var(--warn2); color: var(--warn); }
+.atr  { background: var(--err2);  color: var(--err); }
+.off  { background: #eceff2;      color: var(--sub); }
+
+/* ============ Botões ============ */
+.acoes { display: flex; gap: 8px; margin-top: 12px; }
+.btn { flex: 1; border: 0; border-radius: 10px; padding: 11px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.btn.p { background: var(--pri); color: #fff; }
+.btn.s { background: #eef1f4; color: var(--txt); }
+.link { background: none; border: 0; padding: 0; font-size: 12px; color: var(--sub); margin-top: 8px; text-decoration: underline; cursor: pointer; }
+.fab { background: var(--pri); color: #fff; border: 0; border-radius: 12px; padding: 12px; width: 100%; font-weight: 600; font-size: 14px; margin-bottom: 12px; cursor: pointer; }
+
+/* ============ Menu inferior ============ */
+nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  max-width: 520px; margin: 0 auto;
+  display: flex; background: #fff; border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+nav button { flex: 1; background: none; border: 0; padding: 14px 0; font-size: 13px; color: var(--sub); cursor: pointer; }
+nav button.on { color: var(--pri); font-weight: 700; }
+
+/* ============ Histórico ============ */
+.dia { font-weight: 600; margin: 14px 0 6px; font-size: 14px; }
+.hist { background: #fff; border: 1px solid var(--line); border-radius: 12px; }
+.hist div { display: flex; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid var(--line); font-size: 14px; }
+.hist div:last-child { border: 0; }
+.falta { color: var(--err); }
+.vazio { color: var(--sub); font-size: 14px; text-align: center; margin-top: 30px; }
+
+/* ============ Formulários ============ */
+input, select { width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 10px; font-size: 16px; margin-top: 4px; background: #fff; color: var(--txt); }
+label { font-size: 12px; color: var(--sub); display: block; margin-top: 10px; }
+label.check { display: flex; gap: 8px; align-items: center; margin-top: 14px; font-size: 14px; color: var(--txt); }
+label.check input { width: auto; margin: 0; }
+.two { display: flex; gap: 8px; }
+.two > div { flex: 1; }
+
+/* ============ Modal (folha que sobe de baixo) ============ */
+.modal { position: fixed; inset: 0; background: #0006; display: flex; align-items: flex-end; justify-content: center; z-index: 10; }
+.sheet { background: #fff; width: 100%; max-width: 520px; border-radius: 18px 18px 0 0; padding: 18px 16px calc(18px + env(safe-area-inset-bottom)); }
+
+/* ============ Login ============ */
+.login { min-height: 100vh; justify-content: center; padding: 28px; }
+.login h1 { color: var(--pri); text-align: center; margin: 0 0 6px; }
+.login p { text-align: center; color: var(--sub); font-size: 14px; }
+.login .btn { width: 100%; margin-top: 14px; }
+.hint { font-size: 13px; color: var(--sub); text-align: center; margin-top: 14px; }
