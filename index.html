@@ -16,21 +16,13 @@
   <section id="tela-login" class="tela login" hidden>
     <h1>💊 Meus Remédios</h1>
 
-    <!-- Passo 1: e-mail -->
-    <form id="form-email">
-      <p>Entre com seu e-mail para acessar seus registros.</p>
+    <form id="form-login">
+      <p>Entre para acessar seus registros.</p>
       <label for="login-email">E-mail</label>
       <input id="login-email" type="email" required autocomplete="email">
-      <button class="btn p" type="submit">Enviar código</button>
-    </form>
-
-    <!-- Passo 2: código recebido -->
-    <form id="form-codigo" hidden>
-      <p>Digite o código que chegou no seu e-mail.</p>
-      <label for="login-codigo">Código</label>
-      <input id="login-codigo" inputmode="numeric" maxlength="10" required autocomplete="one-time-code">
+      <label for="login-senha">Senha</label>
+      <input id="login-senha" type="password" required autocomplete="current-password">
       <button class="btn p" type="submit">Entrar</button>
-      <button class="btn s" type="button" id="btn-voltar-email">Trocar e-mail</button>
     </form>
 
     <p id="login-msg" class="hint"></p>
