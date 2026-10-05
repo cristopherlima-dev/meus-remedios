@@ -94,6 +94,8 @@ label { font-size: 12px; color: var(--sub); display: block; margin-top: 10px; }
 label.check { display: flex; gap: 8px; align-items: center; margin-top: 14px; font-size: 14px; color: var(--txt); }
 label.check input { width: auto; margin: 0; }
 .two { display: flex; gap: 8px; }
+.hora { display: flex; align-items: center; gap: 4px; }
+.hora span { font-weight: 700; margin-top: 4px; }
 .two > div { flex: 1; }
 
 /* ============ Modal (folha que sobe de baixo) ============ */

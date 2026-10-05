@@ -79,7 +79,9 @@
       <div class="nome" id="registro-titulo">Registrar</div>
       <div class="two">
         <div><label for="registro-data">Data</label><input id="registro-data" type="date" required></div>
-        <div><label for="registro-hora">Horário</label><input id="registro-hora" type="time" required></div>
+        <div><label for="registro-h">Horário</label>
+          <div class="hora"><select id="registro-h"></select><span>:</span><select id="registro-m"></select></div>
+        </div>
       </div>
       <div class="acoes">
         <button class="btn s" type="button" data-fechar>Cancelar</button>
@@ -101,7 +103,9 @@
         <option value="noite">Noite</option>
       </select>
       <div class="two">
-        <div><label for="remedio-horario">Horário previsto</label><input id="remedio-horario" type="time"></div>
+        <div><label for="remedio-h">Horário previsto</label>
+          <div class="hora"><select id="remedio-h"></select><span>:</span><select id="remedio-m"></select></div>
+        </div>
         <div><label for="remedio-dose">Dose</label><input id="remedio-dose" placeholder="1 comprimido"></div>
       </div>
       <label class="check"><input id="remedio-ativo" type="checkbox" checked> Ativo</label>

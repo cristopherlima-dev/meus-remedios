@@ -73,6 +73,43 @@ function horarioCurto(h) {
 }
 
 // =====================================================================
+// SELETOR DE HORÁRIO (duas listas: hora e minuto)
+// Substitui o <input type="time">, cujo relógio nativo varia de aparelho
+// para aparelho e pode aparecer cortado.
+// =====================================================================
+
+// Preenche as listas: horas 00–23 e minutos de 5 em 5.
+// comVazio = true adiciona a opção "--" (horário opcional)
+function montarSeletorHora(prefixo, comVazio) {
+  const opcoes = (qtd, passo) =>
+    Array.from({ length: qtd / passo }, (_, i) => {
+      const v = String(i * passo).padStart(2, '0');
+      return `<option value="${v}">${v}</option>`;
+    }).join('');
+  const vazio = comVazio ? '<option value="">--</option>' : '';
+  $(prefixo + '-h').innerHTML = vazio + opcoes(24, 1);
+  $(prefixo + '-m').innerHTML = vazio + opcoes(60, 5);
+}
+
+// Coloca "08:13" nas listas (minuto arredondado para baixo: 08:10). '' limpa.
+function definirHora(prefixo, hhmm) {
+  if (!hhmm) { $(prefixo + '-h').value = ''; $(prefixo + '-m').value = ''; return; }
+  const [h, m] = hhmm.split(':');
+  $(prefixo + '-h').value = h;
+  $(prefixo + '-m').value = String(Math.floor(m / 5) * 5).padStart(2, '0');
+}
+
+// Lê as listas e devolve "08:10", ou '' se a hora estiver em branco
+function lerHora(prefixo) {
+  const h = $(prefixo + '-h').value;
+  if (!h) return '';
+  return `${h}:${$(prefixo + '-m').value || '00'}`;
+}
+
+montarSeletorHora('registro', false);
+montarSeletorHora('remedio', true);
+
+// =====================================================================
 // OUTRAS AJUDAS
 // =====================================================================
 
@@ -293,14 +330,14 @@ function abrirModalRegistro(remedio) {
   remedioDoModal = remedio;
   $('registro-titulo').textContent = 'Registrar ' + remedio.nome;
   $('registro-data').value = dataISO(diaSelecionado);
-  $('registro-hora').value = horarioCurto(remedio.horario_previsto) || horaTexto(new Date());
+  definirHora('registro', horarioCurto(remedio.horario_previsto) || horaTexto(new Date()));
   $('modal-registro').hidden = false;
 }
 
 $('form-registro').addEventListener('submit', async (e) => {
   e.preventDefault();
   // "2026-10-05" + "22:00" -> data/hora local
-  const quando = new Date(`${$('registro-data').value}T${$('registro-hora').value}`);
+  const quando = new Date(`${$('registro-data').value}T${lerHora('registro')}`);
   $('modal-registro').hidden = true;
   await salvarRegistro(remedioDoModal.id, quando);
 });
@@ -382,7 +419,7 @@ function abrirModalRemedio(remedio) {
   $('remedio-titulo').textContent = remedio ? 'Editar remédio' : 'Novo remédio';
   $('remedio-nome').value = remedio?.nome ?? '';
   $('remedio-periodo').value = remedio?.periodo ?? 'manha';
-  $('remedio-horario').value = horarioCurto(remedio?.horario_previsto);
+  definirHora('remedio', horarioCurto(remedio?.horario_previsto));
   $('remedio-dose').value = remedio?.dose ?? '';
   $('remedio-ativo').checked = remedio?.ativo ?? true;
   $('modal-remedio').hidden = false;
@@ -394,7 +431,7 @@ $('form-remedio').addEventListener('submit', async (e) => {
   const dados = {
     nome: $('remedio-nome').value.trim(),
     periodo: $('remedio-periodo').value,
-    horario_previsto: $('remedio-horario').value || null, // vazio vira null no banco
+    horario_previsto: lerHora('remedio') || null, // vazio vira null no banco
     dose: $('remedio-dose').value.trim() || null,
     ativo: $('remedio-ativo').checked,
   };
