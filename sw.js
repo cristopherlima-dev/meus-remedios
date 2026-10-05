@@ -3,7 +3,7 @@
 // Estratégia "rede primeiro": tenta baixar a versão nova; sem internet,
 // usa a cópia guardada. Assim atualizações aparecem sem complicação.
 // =====================================================================
-const CACHE = 'meus-remedios-v1';
+const CACHE = 'meus-remedios-v2';
 
 const ARQUIVOS = [
   './',
@@ -38,7 +38,10 @@ self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET' || url.origin !== location.origin) return;
 
   e.respondWith(
-    fetch(e.request)
+    // cache: 'no-cache' obriga a conferir com o servidor se há versão nova.
+    // Sem isso, o navegador pode usar uma cópia de até 10 min do GitHub Pages
+    // e misturar arquivos novos com antigos.
+    fetch(e.request.url, { cache: 'no-cache' })
       .then((resp) => {
         const copia = resp.clone();
         caches.open(CACHE).then((c) => c.put(e.request, copia));
