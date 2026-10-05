@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Meus Remédios</title>
+  <meta name="theme-color" content="#2f7d5b">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ===================== TELA DE LOGIN ===================== -->
+  <section id="tela-login" class="tela login" hidden>
+    <h1>💊 Meus Remédios</h1>
+
+    <!-- Passo 1: e-mail -->
+    <form id="form-email">
+      <p>Entre com seu e-mail para acessar seus registros.</p>
+      <label for="login-email">E-mail</label>
+      <input id="login-email" type="email" required autocomplete="email">
+      <button class="btn p" type="submit">Enviar código</button>
+    </form>
+
+    <!-- Passo 2: código recebido -->
+    <form id="form-codigo" hidden>
+      <p>Digite o código que chegou no seu e-mail.</p>
+      <label for="login-codigo">Código</label>
+      <input id="login-codigo" inputmode="numeric" maxlength="10" required autocomplete="one-time-code">
+      <button class="btn p" type="submit">Entrar</button>
+      <button class="btn s" type="button" id="btn-voltar-email">Trocar e-mail</button>
+    </form>
+
+    <p id="login-msg" class="hint"></p>
+  </section>
+
+  <!-- ===================== APP (logado) ===================== -->
+  <div id="app" hidden>
+
+    <!-- TELA HOJE -->
+    <section id="tela-hoje" class="tela">
+      <header>
+        <h1>💊 Meus Remédios</h1>
+        <div class="date">
+          <button id="dia-anterior" aria-label="Dia anterior">‹</button>
+          <span id="dia-texto"></span>
+          <button id="dia-seguinte" aria-label="Próximo dia">›</button>
+        </div>
+      </header>
+      <main>
+        <h2 id="hoje-titulo">Hoje</h2>
+        <div id="lista-hoje"></div>
+      </main>
+    </section>
+
+    <!-- TELA HISTÓRICO -->
+    <section id="tela-historico" class="tela" hidden>
+      <header><h1>Histórico</h1></header>
+      <main id="lista-historico"></main>
+    </section>
+
+    <!-- TELA REMÉDIOS -->
+    <section id="tela-remedios" class="tela" hidden>
+      <header>
+        <h1>Remédios</h1>
+        <button id="btn-sair" class="sair">Sair</button>
+      </header>
+      <main>
+        <button id="btn-novo-remedio" class="fab">+ Novo remédio</button>
+        <div id="lista-remedios"></div>
+      </main>
+    </section>
+
+    <!-- MENU INFERIOR -->
+    <nav>
+      <button data-tela="tela-hoje" class="on">Hoje</button>
+      <button data-tela="tela-historico">Histórico</button>
+      <button data-tela="tela-remedios">Remédios</button>
+    </nav>
+  </div>
+
+  <!-- ===================== MODAL: OUTRO HORÁRIO ===================== -->
+  <div id="modal-registro" class="modal" hidden>
+    <form id="form-registro" class="sheet">
+      <div class="nome" id="registro-titulo">Registrar</div>
+      <div class="two">
+        <div><label for="registro-data">Data</label><input id="registro-data" type="date" required></div>
+        <div><label for="registro-hora">Horário</label><input id="registro-hora" type="time" required></div>
+      </div>
+      <div class="acoes">
+        <button class="btn s" type="button" data-fechar>Cancelar</button>
+        <button class="btn p" type="submit">Salvar</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ===================== MODAL: CADASTRO DE REMÉDIO ===================== -->
+  <div id="modal-remedio" class="modal" hidden>
+    <form id="form-remedio" class="sheet">
+      <div class="nome" id="remedio-titulo">Novo remédio</div>
+      <label for="remedio-nome">Nome *</label>
+      <input id="remedio-nome" required placeholder="Ex.: Olmesartana">
+      <label for="remedio-periodo">Período *</label>
+      <select id="remedio-periodo" required>
+        <option value="manha">Manhã</option>
+        <option value="tarde">Tarde</option>
+        <option value="noite">Noite</option>
+      </select>
+      <div class="two">
+        <div><label for="remedio-horario">Horário previsto</label><input id="remedio-horario" type="time"></div>
+        <div><label for="remedio-dose">Dose</label><input id="remedio-dose" placeholder="1 comprimido"></div>
+      </div>
+      <label class="check"><input id="remedio-ativo" type="checkbox" checked> Ativo</label>
+      <div class="acoes">
+        <button class="btn s" type="button" data-fechar>Cancelar</button>
+        <button class="btn p" type="submit">Salvar</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- type="module" permite usar "import" dentro do app.js -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>
