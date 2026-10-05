@@ -1,0 +1,6 @@
+# Guia local de etapas (não vai para o GitHub)
+PASSO-A-PASSO.md
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
