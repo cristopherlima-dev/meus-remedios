@@ -3,7 +3,7 @@
 // Estratégia "rede primeiro": tenta baixar a versão nova; sem internet,
 // usa a cópia guardada. Assim atualizações aparecem sem complicação.
 // =====================================================================
-const CACHE = 'meus-remedios-v3';
+const CACHE = 'meus-remedios-v4';
 
 const ARQUIVOS = [
   './',
@@ -14,6 +14,7 @@ const ARQUIVOS = [
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
+  './icons/badge-96.png',
 ];
 
 // Instalação: baixa e guarda os arquivos
@@ -63,7 +64,10 @@ self.addEventListener('push', (e) => {
     self.registration.showNotification(dados.titulo || 'Meus Remédios', {
       body: dados.corpo || '',
       icon: 'icons/icon-192.png',
-      badge: 'icons/icon-192.png',
+      // badge = ícone pequeno da barra de status. O Android usa só o formato
+      // (partes transparentes x opacas) e pinta de branco: por isso um PNG
+      // de fundo transparente, senão aparece um quadrado branco.
+      badge: 'icons/badge-96.png',
       // Mesma tag = substitui a notificação anterior (10 min -> 5 min -> agora)
       tag: dados.tag || 'meus-remedios',
       renotify: true, // vibra/toca de novo mesmo substituindo
