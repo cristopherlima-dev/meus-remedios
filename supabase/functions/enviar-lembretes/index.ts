@@ -17,11 +17,22 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!; // ignora o RLS: só no servidor!
 const CRON_SECRET = Deno.env.get("CRON_SECRET")!;
 
-webpush.setVapidDetails(
-  Deno.env.get("VAPID_SUBJECT")!, // ex.: mailto:seu@email.com
-  Deno.env.get("VAPID_PUBLIC_KEY")!,
-  Deno.env.get("VAPID_PRIVATE_KEY")!,
-);
+// Configura as chaves VAPID. Fica dentro de uma função (e não solta no arquivo)
+// para que um secret faltando/errado vire uma mensagem de erro clara,
+// em vez de derrubar a função antes de responder.
+let vapidOk = false;
+function configurarVapid() {
+  if (vapidOk) return;
+  for (const nome of ["VAPID_SUBJECT", "VAPID_PUBLIC_KEY", "VAPID_PRIVATE_KEY", "CRON_SECRET"]) {
+    if (!Deno.env.get(nome)) throw new Error(`Secret ${nome} não cadastrado`);
+  }
+  webpush.setVapidDetails(
+    Deno.env.get("VAPID_SUBJECT")!.trim(), // ex.: mailto:seu@email.com
+    Deno.env.get("VAPID_PUBLIC_KEY")!.trim(),
+    Deno.env.get("VAPID_PRIVATE_KEY")!.trim(),
+  );
+  vapidOk = true;
+}
 
 const db = createClient(SUPABASE_URL, SERVICE_KEY);
 
@@ -29,6 +40,7 @@ const db = createClient(SUPABASE_URL, SERVICE_KEY);
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
 const resposta = (corpo: unknown, status = 200) =>
@@ -162,6 +174,8 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
 
   try {
+    configurarVapid();
+
     // Chamado pelo agendador?
     if (req.headers.get("x-cron-secret")) {
       if (req.headers.get("x-cron-secret") !== CRON_SECRET) return resposta({ erro: "segredo inválido" }, 401);
