@@ -2,7 +2,7 @@
 // Meus Remédios - lógica do app
 // =====================================================================
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
+import { SUPABASE_URL, SUPABASE_KEY, VAPID_PUBLIC_KEY } from './config.js';
 
 // Conexão com o banco. A sessão de login fica salva no aparelho.
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -160,7 +160,9 @@ $('form-login').addEventListener('submit', async (e) => {
 });
 
 $('btn-sair').addEventListener('click', async () => {
-  if (confirm('Sair deste aparelho?')) await db.auth.signOut();
+  if (!confirm('Sair deste aparelho?')) return;
+  await desativarLembretes(true); // este aparelho para de receber avisos
+  await db.auth.signOut();
 });
 
 // Mostra a tela de login ou o app, conforme exista sessão
@@ -389,6 +391,8 @@ async function renderizarHistorico() {
 // =====================================================================
 
 function renderizarRemedios() {
+  renderizarLembretes();
+
   const card = (r) => `
     <div class="card ${r.ativo ? '' : 'inativo'}">
       <div class="row">
@@ -444,6 +448,118 @@ $('form-remedio').addEventListener('submit', async (e) => {
   $('modal-remedio').hidden = true;
   carregarTudo();
 });
+
+// =====================================================================
+// LEMBRETES (notificações push)
+// =====================================================================
+// Como funciona:
+// 1. "Ativar" pede permissão ao navegador e cria uma inscrição (subscription):
+//    um endereço único deste aparelho no serviço de push do navegador.
+// 2. A inscrição é salva na tabela push_inscricoes.
+// 3. O servidor (Edge Function) usa esse endereço para mandar os avisos.
+
+// O navegador tem tudo que é preciso para push?
+const suportaPush = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+
+// A chave VAPID vem em texto (base64); o navegador precisa dela em bytes
+function chaveEmBytes(base64) {
+  const padding = '='.repeat((4 - (base64.length % 4)) % 4);
+  const b64 = (base64 + padding).replace(/-/g, '+').replace(/_/g, '/');
+  return Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+}
+
+// Inscrição atual deste aparelho (ou null)
+async function inscricaoAtual() {
+  if (!suportaPush) return null;
+  const reg = await navigator.serviceWorker.ready;
+  return reg.pushManager.getSubscription();
+}
+
+async function renderizarLembretes() {
+  const status = $('lembretes-status');
+  const acoes = $('lembretes-acoes');
+
+  if (!suportaPush) {
+    status.textContent = 'Este navegador não suporta notificações. No iPhone, instale o app na Tela de Início primeiro.';
+    acoes.innerHTML = '';
+    return;
+  }
+  if (Notification.permission === 'denied') {
+    status.textContent = 'Notificações bloqueadas. Libere nas configurações do site/app e volte aqui.';
+    acoes.innerHTML = '';
+    return;
+  }
+
+  const inscricao = await inscricaoAtual();
+  if (inscricao) {
+    status.innerHTML = '<span class="ativo">✔ Ativos neste aparelho</span>';
+    acoes.innerHTML = `
+      <button class="btn s" id="btn-lembrete-teste">Enviar teste</button>
+      <button class="btn s" id="btn-lembrete-desativar">Desativar</button>`;
+    $('btn-lembrete-teste').onclick = enviarTeste;
+    $('btn-lembrete-desativar').onclick = () => desativarLembretes(false);
+  } else {
+    status.textContent = '10 min antes, 5 min antes e no horário previsto, só se ainda estiver Pendente.';
+    acoes.innerHTML = '<button class="btn p" id="btn-lembrete-ativar">Ativar neste aparelho</button>';
+    $('btn-lembrete-ativar').onclick = ativarLembretes;
+  }
+}
+
+async function ativarLembretes() {
+  try {
+    // 1. Permissão (o navegador mostra a pergunta "Permitir notificações?")
+    const permissao = await Notification.requestPermission();
+    if (permissao !== 'granted') return renderizarLembretes();
+
+    // 2. Cria a inscrição deste aparelho no serviço de push
+    const reg = await navigator.serviceWorker.ready;
+    const inscricao = await reg.pushManager.subscribe({
+      userVisibleOnly: true, // obrigatório: todo push precisa mostrar uma notificação
+      applicationServerKey: chaveEmBytes(VAPID_PUBLIC_KEY),
+    });
+
+    // 3. Salva no banco. upsert = insere, ou atualiza se o endpoint já existir
+    const { endpoint, keys } = inscricao.toJSON();
+    const { error } = await db
+      .from('push_inscricoes')
+      .upsert({ endpoint, p256dh: keys.p256dh, auth: keys.auth }, { onConflict: 'endpoint' });
+    if (error) throw error;
+  } catch (erro) {
+    avisar(erro);
+  }
+  renderizarLembretes();
+}
+
+// silencioso = true quando chamado pelo "Sair" (sem pergunta nem re-render)
+async function desativarLembretes(silencioso) {
+  try {
+    const inscricao = await inscricaoAtual();
+    if (!inscricao) return;
+    if (!silencioso && !confirm('Parar de receber lembretes neste aparelho?')) return;
+    await db.from('push_inscricoes').delete().eq('endpoint', inscricao.endpoint);
+    await inscricao.unsubscribe();
+  } catch (erro) {
+    if (!silencioso) avisar(erro);
+  }
+  if (!silencioso) renderizarLembretes();
+}
+
+// Pede ao servidor para mandar uma notificação de teste agora
+async function enviarTeste() {
+  const { error } = await db.functions.invoke('enviar-lembretes', { body: { teste: true } });
+  if (error) avisar('O teste falhou. A função do servidor já foi publicada? (' + error.message + ')');
+}
+
+// Ao tocar numa notificação com o app já aberto, o service worker avisa aqui:
+// vamos para a tela Hoje, no dia de hoje, com dados atualizados.
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', (e) => {
+    if (e.data?.tipo !== 'abrir-hoje') return;
+    diaSelecionado = hojeZero();
+    document.querySelector('nav button[data-tela="tela-hoje"]').click();
+    carregarTudo();
+  });
+}
 
 // =====================================================================
 // PWA: registra o service worker (permite instalar e abrir offline)

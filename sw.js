@@ -3,7 +3,7 @@
 // Estratégia "rede primeiro": tenta baixar a versão nova; sem internet,
 // usa a cópia guardada. Assim atualizações aparecem sem complicação.
 // =====================================================================
-const CACHE = 'meus-remedios-v2';
+const CACHE = 'meus-remedios-v3';
 
 const ARQUIVOS = [
   './',
@@ -48,5 +48,43 @@ self.addEventListener('fetch', (e) => {
         return resp;
       })
       .catch(() => caches.match(e.request))
+  );
+});
+
+// =====================================================================
+// NOTIFICAÇÕES (push)
+// =====================================================================
+
+// Chegou um push do servidor: mostra a notificação.
+// O servidor manda um JSON: { titulo, corpo, tag }
+self.addEventListener('push', (e) => {
+  const dados = e.data ? e.data.json() : {};
+  e.waitUntil(
+    self.registration.showNotification(dados.titulo || 'Meus Remédios', {
+      body: dados.corpo || '',
+      icon: 'icons/icon-192.png',
+      badge: 'icons/icon-192.png',
+      // Mesma tag = substitui a notificação anterior (10 min -> 5 min -> agora)
+      tag: dados.tag || 'meus-remedios',
+      renotify: true, // vibra/toca de novo mesmo substituindo
+    })
+  );
+});
+
+// Tocou na notificação: abre o app na tela Hoje
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  e.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((janelas) => {
+      // App já aberto? Traz para frente e avisa para ir à tela Hoje
+      for (const janela of janelas) {
+        if ('focus' in janela) {
+          janela.postMessage({ tipo: 'abrir-hoje' });
+          return janela.focus();
+        }
+      }
+      // App fechado: abre (ele já começa na tela Hoje)
+      return self.clients.openWindow('./');
+    })
   );
 });

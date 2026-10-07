@@ -51,6 +51,9 @@ h2 { font-size: 13px; text-transform: uppercase; color: var(--sub); letter-spaci
 /* ============ Cards ============ */
 .card { background: var(--card); border-radius: 14px; padding: 14px; margin-bottom: 12px; border: 1px solid var(--line); }
 .card.late { border-color: var(--err); }
+.card.bell { border-color: var(--pri); background: var(--pri2); }
+.card.bell .btn.s { background: #fff; border: 1px solid var(--line); }
+.card.bell .ativo { color: var(--pri); font-weight: 600; }
 .card.inativo { opacity: .6; }
 .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .nome { font-weight: 600; font-size: 16px; }
